@@ -1,13 +1,14 @@
-#!/bin/sh
+#!/bin/bash
 
 SERVERNAME="testserv"
 SERVERPATH="/var/www/$SERVERNAME"
 subst="/usr/bin/perl -p -i -e"
 
-[ -e /etc/centos-release ] && DISTR="Centos"
+[ -e /etc/issue ] || exit 1
+DISTR=`head -n1 /etc/issue | awk '{print $1;}'`
 
-if [ $DISTR=="Centos" ]; then
-    yum --enablerepo=remi,remi-php55 install nginx php-fpm php-common
+if [[ $DISTR == 'CentOS' ]]; then
+    yum --enablerepo=remi,remi-php55 -y install nginx php-fpm php-common
     PHPFIXPATH=/etc/php.ini
     mkdir /etc/nginx/sites-available
     mkdir /etc/nginx/sites-enabled
@@ -15,8 +16,19 @@ if [ $DISTR=="Centos" ]; then
     $subst "s/^worker_processes.*/worker_processes  4;/g" /etc/nginx/nginx.conf
     $subst "s/include \/etc\/nginx\/sites-enabled\/\*;//g" /etc/nginx/nginx.conf
     $subst "s/(include \/etc\/nginx\/conf\.d\/\*\.conf;)/\1\n    include \/etc\/nginx\/sites-enabled\/\*;/g" /etc/nginx/nginx.conf
+    PHPFPM="php-fpm"
+    NGINX="nginx"
     chkconfig php-fpm on
     chkconfig nginx on
+fi
+
+if [[ $DISTR == "Ubuntu" ]]; then
+   apt-get install -y nginx php5 php5-fpm
+   PHPFIXPATH=/etc/php5/fpm/php.ini
+   rm -f /etc/nginx/sites-enabled/*
+   PHPFPM="php5-fpm"
+   NGINX="nginx"
+   $subst "s/^listen =.*/listen = 127.0.0.1:9000/g" /etc/php5/fpm/pool.d/www.conf
 fi
 
 $subst "s/.*cgi\.fix_pathinfo=.*/cgi\.fix_pathinfo = 0;/g" $PHPFIXPATH
@@ -49,8 +61,8 @@ server {
         fastcgi_split_path_info ^(.+\.php)(/.+)\$;
         fastcgi_pass   127.0.0.1:9000;
         fastcgi_index  index.php;
-        fastcgi_param  SCRIPT_FILENAME  $SERVERPATH\$fastcgi_script_name;
         include        fastcgi_params;
+        fastcgi_param  SCRIPT_FILENAME  $SERVERPATH\$fastcgi_script_name;
     }
     location ~ /\.ht {
         deny  all;
@@ -64,5 +76,5 @@ phpinfo();
 ?>
 EOF
 ln -s /etc/nginx/sites-available/$SERVERNAME /etc/nginx/sites-enabled/
-service php-fpm restart
-service nginx restart
+service $PHPFPM restart
+service $NGINX restart
