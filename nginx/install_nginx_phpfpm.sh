@@ -1,7 +1,8 @@
 #!/bin/bash
 # This script will install Nginx webserver with PHP-FPM engine on different Linux distro
 # (c) Roman Zhukov <roman@jadeite.su>, 2014
-# Warning: before run in on CentOS, pease add EPEL and Remi's repo
+# Works on: CentOS 6.5, Oracle Linux 6.5, Ubuntu 14.04
+# Warning: before run in on CentOS or Oracle, pease add EPEL and Remi's repo
 
 SERVERNAME="testserv"
 SERVERPATH="/var/www/$SERVERNAME"
@@ -10,7 +11,7 @@ subst="/usr/bin/perl -p -i -e"
 [ -e /etc/issue ] || exit 1
 DISTR=`head -n1 /etc/issue | awk '{print $1;}'`
 
-if [[ $DISTR == 'CentOS' ]]; then
+if [[ $DISTR == 'CentOS' ]] || [[ $DISTR == 'Oracle' ]]; then
     yum --enablerepo=remi,remi-php55 -y install nginx php-fpm php-common
     PHPFIXPATH=/etc/php.ini
     mkdir /etc/nginx/sites-available
