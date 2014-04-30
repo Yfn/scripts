@@ -1,4 +1,7 @@
 #!/bin/bash
+# This script will install Nginx webserver with PHP-FPM engine on different Linux distro
+# (c) Roman Zhukov <roman@jadeite.su>, 2014
+# Warning: before run in on CentOS, pease add EPEL and Remi's repo
 
 SERVERNAME="testserv"
 SERVERPATH="/var/www/$SERVERNAME"
@@ -38,7 +41,7 @@ server {
     listen       80;
     server_name  $SERVERNAME;
 
-    access_log  /var/log/nginx/$SERVERNAME.access.log  main;
+    access_log  /var/log/nginx/$SERVERNAME.access.log;
     error_log   /var/log/nginx/$SERVERNAME.error.log;
     root   $SERVERPATH;
     index  index.html index.htm;
