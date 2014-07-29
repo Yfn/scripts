@@ -324,6 +324,7 @@ postconf -e 'smtpd_tls_auth_only = yes'
 postconf -e 'tls_random_source = dev:/dev/urandom'
 postconf -e 'mailbox_transport = dovecot'
 postconf -e 'queue_directory = /var/spool/postfix'
+postconf -e 'mailbox_command = /usr/lib/dovecot/deliver -c /etc/dovecot/conf.d/10-dovecot-postfix.auth -m "${EXTENSION}"'
 
 echo "# Basic system aliases -- these MUST be present.
 MAILER-DAEMON:  postmaster
